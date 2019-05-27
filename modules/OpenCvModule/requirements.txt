@@ -1,0 +1,4 @@
+azure-iothub-device-client~=1.4.3
+opencv-python==4.1.0.25
+tensorflow
+numpy
