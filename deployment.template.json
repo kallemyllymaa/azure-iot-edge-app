@@ -57,16 +57,6 @@
           }
         },
         "modules": {
-          "tempSensor": {
-            "version": "1.0",
-            "type": "docker",
-            "status": "running",
-            "restartPolicy": "always",
-            "settings": {
-              "image": "mcr.microsoft.com/azureiotedge-simulated-temperature-sensor:1.0",
-              "createOptions": {}
-            }
-          },
           "PythonModule": {
             "version": "1.0",
             "type": "docker",
@@ -84,7 +74,20 @@
             "restartPolicy": "always",
             "settings": {
               "image": "${MODULES.OpenCvModule}",
-              "createOptions": {}
+              "createOptions": {
+                "HostConfig": {
+                  "Binds": [
+                    "/dev/video0:/dev/video0"
+                  ],
+                  "Devices": [
+                    {
+                      "PathOnHost": "/dev/video0",
+                      "PathInContainer": "/dev/video0",
+                      "CgroupPermissions": "mrw"
+                    }
+                  ]
+                }
+              }
             }
           }
         }

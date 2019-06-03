@@ -93,21 +93,21 @@ def main(protocol):
 
         #content = "Hello World from Python APi"
 
-        """  cap = cv.VideoCapture("./images/image.jpg")
-            if not cap.isOpened():
-                print("Cannot open camera")
-                exit() """
+        cap = cv.VideoCapture(0)
+        if not cap.isOpened():
+            print("Cannot open camera")
+            exit()
         cvNet = cv.dnn.readNetFromTensorflow(
             './model/frozen_inference_graph.pb', './model/ssd_mobilenet_v2_coco_2018_03_29.pbtxt')
         while True:
             # Capture frame-by-frame
-            img = cv.imread("./images/image.jpg")
+            ret, img = cap.read()
             # if frame is read correctly ret is True
-            """ if not ret:
+            if not ret:
                 print("Can't receive frame (stream end?). Exiting ...")
                 break
             rows = img.shape[0]
-            cols = img.shape[1] """
+            cols = img.shape[1]
             cvNet.setInput(cv.dnn.blobFromImage(
                 img, size=(300, 300), swapRB=True, crop=False))
 
@@ -117,10 +117,10 @@ def main(protocol):
                 classId = int(detection[1])
                 score = float(detection[2])
                 if score > 0.3:
-                    """ left = detection[3] * cols
+                    left = detection[3] * cols
                     top = detection[4] * rows
                     right = detection[5] * cols
-                    bottom = detection[6] * rows """
+                    bottom = detection[6] * rows
                     msg_txt_formatted = MSG_TXT % (
                         classId,
                         score)
@@ -129,36 +129,6 @@ def main(protocol):
                     }
                     hub_manager.send_event_to_output(
                         "temperatureOutput", msg_txt_formatted, msg_properties, 1)
-
-        """ while True:
-            # send a few messages every minute
-            print("IoTHubModuleClient sending %d messages" % MESSAGE_COUNT)
-
-            for message_counter in range(0, MESSAGE_COUNT):
-                temperature = MIN_TEMPERATURE + (random.random() * 10)
-                humidity = MIN_HUMIDITY + (random.random() * 20)
-                msg_txt_formatted = MSG_TXT % (
-                    AVG_WIND_SPEED + (random.random() * 4 + 2),
-                    temperature,
-                    humidity)
-
-                msg_properties = {
-                    "temperatureAlert": 'true' if temperature > 28 else 'false'
-                }
-                hub_manager.send_event_to_output(
-                    "temperatureOutput", msg_txt_formatted, msg_properties, message_counter)
-                print(
-                    "IoTHubModuleClient.send_event_to_output accepted message [%d] for transmission to IoT Hub." % message_counter)
-
-            # Wait for Commands or exit
-            print("IoTHubModuleClient waiting for commands, press Ctrl-C to exit.")
-
-            status_counter = 0
-            while status_counter < 6:
-                status = hub_manager.client.get_send_status()
-                print("Send status: %s" % status)
-                time.sleep(10)
-                status_counter += 1 """
 
     except IoTHubError as iothub_error:
         print("Unexpected error %s from IoTHub" % iothub_error)
