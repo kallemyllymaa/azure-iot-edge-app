@@ -27,9 +27,6 @@ MINIMUM_POLLING_TIME = 9
 MESSAGE_TIMEOUT = 10000
 
 RECEIVE_CONTEXT = 0
-AVG_WIND_SPEED = 10.0
-MIN_TEMPERATURE = 20.0
-MIN_HUMIDITY = 60.0
 MESSAGE_COUNT = 5
 RECEIVED_COUNT = 0
 TWIN_CONTEXT = 0
@@ -40,7 +37,7 @@ SEND_CALLBACKS = 0
 
 PROTOCOL = IoTHubTransportProvider.MQTT
 
-MSG_TXT = "{\"deviceId\": \"myPythonDevice\",\"objectId\": %.2f,\"detectionScore\": %.2f}"
+MSG_TXT = "{\"banana\": %.2f,\"orange\": %.2f,\"other\": %.2f}"
 
 
 def send_confirmation_callback(message, result, user_context):
@@ -91,14 +88,23 @@ def main(protocol):
 
         print("Starting the IoT Hub Python sample...")
 
-        #content = "Hello World from Python APi"
+        # content = "Hello World from Python APi"
 
         cap = cv.VideoCapture(0)
         if not cap.isOpened():
             print("Cannot open camera")
             exit()
-        cvNet = cv.dnn.readNetFromTensorflow(
-            './model/frozen_inference_graph.pb', './model/ssd_mobilenet_v2_coco_2018_03_29.pbtxt')
+        cv_net = cv.dnn.readNetFromTensorflow(
+            './model/frozen_inference_graph.pb',
+            './model/ssd_mobilenet_v2_coco_2018_03_29.pbtxt'
+        )
+        this_dict = {
+            "banana": 0,
+            "orange": 0,
+            "other": 0
+        }
+        start_time = time.time()
+        counter = 0
         while True:
             # Capture frame-by-frame
             ret, img = cap.read()
@@ -106,30 +112,44 @@ def main(protocol):
             if not ret:
                 print("Can't receive frame (stream end?). Exiting ...")
                 break
-            rows = img.shape[0]
-            cols = img.shape[1]
-            cvNet.setInput(cv.dnn.blobFromImage(
+            """ rows = img.shape[0]
+            cols = img.shape[1] """
+            cv_net.setInput(cv.dnn.blobFromImage(
                 img, size=(300, 300), swapRB=True, crop=False))
 
-            cvOut = cvNet.forward()
+            cv_out = cv_net.forward()
 
-            for detection in cvOut[0, 0, :, :]:
+            for detection in cv_out[0, 0, :, :]:
                 classId = int(detection[1])
                 score = float(detection[2])
-                if score > 0.3:
-                    left = detection[3] * cols
+                if score > 0.4:
+                    """ left = detection[3] * cols
                     top = detection[4] * rows
                     right = detection[5] * cols
-                    bottom = detection[6] * rows
-                    msg_txt_formatted = MSG_TXT % (
-                        classId,
-                        score)
-                    msg_properties = {
-                        "temperatureAlert": 'true' if score > 0.5 else 'false'
-                    }
-                    hub_manager.send_event_to_output(
-                        "temperatureOutput", msg_txt_formatted, msg_properties, 1)
-
+                    bottom = detection[6] * rows """
+                    if(classId == 52):
+                        this_dict["banana"] = this_dict["banana"] + 1
+                    elif(classId == 55):
+                        this_dict["orange"] = this_dict["orange"] + 1
+                    else:
+                        this_dict["other"] = this_dict["other"] + 1
+            if (time.time() - start_time) > 5:
+                msg_txt_formatted = MSG_TXT % (
+                    int(this_dict["banana"] / counter),
+                    int(this_dict["orange"] / counter),
+                    int(this_dict["other"] / counter)
+                )
+                msg_properties = {}
+                hub_manager.send_event_to_output(
+                    "detectionOutput", msg_txt_formatted, msg_properties, 1)
+                start_time = time.time()
+                this_dict = {
+                    "banana": 0,
+                    "orange": 0,
+                    "other": 0
+                }
+                counter = 0
+            counter += 1
     except IoTHubError as iothub_error:
         print("Unexpected error %s from IoTHub" % iothub_error)
         return

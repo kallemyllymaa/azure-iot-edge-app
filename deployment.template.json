@@ -98,7 +98,7 @@
         "schemaVersion": "1.0",
         "routes": {
           "PythonModuleToIoTHub": "FROM /messages/modules/PythonModule/outputs/* INTO $upstream",
-          "OpenCvModuleToIoTHub": "FROM /messages/modules/OpenCvModule/outputs/temperatureOutput INTO BrokeredEndpoint(\"/modules/PythonModule/inputs/input1\")"
+          "OpenCvModuleToIoTHub": "FROM /messages/modules/OpenCvModule/outputs/detectionOutput INTO BrokeredEndpoint(\"/modules/PythonModule/inputs/input1\")"
         },
         "storeAndForwardConfiguration": {
           "timeToLiveSecs": 7200

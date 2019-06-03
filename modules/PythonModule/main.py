@@ -44,7 +44,7 @@ def send_confirmation_callback(message, result, user_context):
 # input queue (in the case of this sample, "input1").  Because this is a filter module,
 # we forward this message to the "output1" queue.
 def receive_message_callback(message, hubManager):
-    global RECEIVE_CALLBACKS
+    """ global RECEIVE_CALLBACKS
     global TEMPERATURE_THRESHOLD
     message_buffer = message.get_bytearray()
     size = len(message_buffer)
@@ -59,7 +59,7 @@ def receive_message_callback(message, hubManager):
     if "temperature" in data and data["temperature"] > TEMPERATURE_THRESHOLD:
         map_properties.add("MessageType", "Alert")
         print("Machine temperature %s exceeds threshold %s" %
-              (data["temperature"], TEMPERATURE_THRESHOLD))
+              (data["temperature"], TEMPERATURE_THRESHOLD)) """
     hubManager.forward_event_to_output("output1", message, 0)
     return IoTHubMessageDispositionResult.ACCEPTED
 
